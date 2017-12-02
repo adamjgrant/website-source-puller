@@ -7,7 +7,8 @@ require "ruby-progressbar"
 x = 0
 sites_per_batch = 20
 number_in_batch = 0
-progressbar = ProgressBar.create(length: SITES.count)
+progressbar_length = SITES.count > 99 ? SITES.count : 99
+progressbar = ProgressBar.create(length: progressbar_length)
 
 SITES.each do |site|
   progressbar.increment
@@ -19,10 +20,21 @@ SITES.each do |site|
   else
     response = response.body
   end
-  File.open("html-#{x}.txt", "a"){ |f| f.write(response) }
+  File.open("html-#{x}.txt", "a"){ |f| 
+	  f.write(response) 
+  }
 
   if number_in_batch == sites_per_batch
     number_in_batch = 0
     x += 1
   end
 end
+
+puts "UTF-8 Formatting Files..."
+x = 0
+
+files_count = SITES.length / sites_per_batch
+files_count.times do |x|
+  %x(vim +"set nobomb | set fenc=utf8 | x" html-#{x}.txt)
+end
+
